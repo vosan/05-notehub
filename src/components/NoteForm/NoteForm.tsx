@@ -49,6 +49,8 @@ export default function NoteForm({ onCancel, onSuccess }: NoteFormProps) {
     <Formik
       initialValues={initialValues}
       validationSchema={validationSchema}
+      validateOnChange={false}
+      validateOnBlur={false}
       onSubmit={handleSubmit}
     >
       {({ isSubmitting, errors, touched }) => (

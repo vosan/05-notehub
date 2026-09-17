@@ -137,15 +137,30 @@ describe('NoteHub workflows', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('validates required title, title lengths, and content length before submitting', async () => {
+  it('validates only on submit and keeps invalid drafts open without creating notes', async () => {
     const { user } = setup();
     await user.click(screen.getByRole('button', { name: 'Create note +' }));
+    const dialog = screen.getByRole('dialog');
+    const title = screen.getByLabelText('Title');
     const submit = screen.getByRole('button', {
       name: 'Create note',
       exact: true,
     });
+    expect(screen.queryByText('Title is required')).not.toBeInTheDocument();
+    await user.click(screen.getByLabelText('Content'));
+    expect(screen.queryByText('Title is required')).not.toBeInTheDocument();
+    await user.type(title, 'ab');
+    await user.tab();
+    expect(
+      screen.queryByText('Title must be at least 3 characters'),
+    ).not.toBeInTheDocument();
+    await user.clear(title);
+    await user.tab();
+    expect(screen.queryByText('Title is required')).not.toBeInTheDocument();
     await user.click(submit);
     expect(await screen.findByText('Title is required')).toBeVisible();
+    expect(dialog).toBeVisible();
+    expect(createNote).not.toHaveBeenCalled();
     fireEvent.change(screen.getByLabelText('Title'), {
       target: { value: 'ab' },
     });
@@ -153,6 +168,9 @@ describe('NoteHub workflows', () => {
     expect(
       await screen.findByText('Title must be at least 3 characters'),
     ).toBeVisible();
+    expect(dialog).toBeVisible();
+    expect(title).toHaveValue('ab');
+    expect(createNote).not.toHaveBeenCalled();
     fireEvent.change(screen.getByLabelText('Title'), {
       target: { value: 'a'.repeat(51) },
     });
@@ -166,6 +184,7 @@ describe('NoteHub workflows', () => {
     expect(
       await screen.findByText('Content must be at most 500 characters'),
     ).toBeVisible();
+    expect(dialog).toBeVisible();
     expect(createNote).not.toHaveBeenCalled();
   });
 
