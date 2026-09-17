@@ -1,5 +1,10 @@
-import ReactPaginate from 'react-paginate';
+import ReactPaginateModule from 'react-paginate';
 import css from './Pagination.module.css';
+
+// The package's UMD export can retain a default wrapper in Vite's dev bundle.
+const ReactPaginate =
+  (ReactPaginateModule as unknown as { default?: typeof ReactPaginateModule })
+    .default ?? ReactPaginateModule;
 
 interface PaginationProps {
   totalPages: number;
